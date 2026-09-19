@@ -79,7 +79,6 @@ resource "grafana_dashboard" "azure_topology" {
                     Resources
                     | project id=tolower(id), title=name, subtitle=type
                   )
-                | order by title asc
               KQL
             }
           },
@@ -95,7 +94,6 @@ resource "grafana_dashboard" "azure_topology" {
                 | extend source=tolower(id),
                     target=tolower(strcat('/subscriptions/', subscriptionId, '/resourceGroups/', resourceGroup))
                 | project id=strcat('edge-', tolower(id)), source, target, title=type
-                | order by title asc
               KQL
             }
           }
