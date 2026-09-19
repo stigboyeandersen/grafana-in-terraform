@@ -25,6 +25,6 @@ terraform plan
 terraform apply
 ```
 
-You can update both dashboards and alerts directly in Grafana. After making changes, run `terraform plan` and sync the final versions back to Terraform so they are preserved.
+You can update both dashboards and alerts directly in Grafana. After making changes, run `terraform plan` and sync the final versions back to Terraform before `terraform apply`; otherwise an older Terraform definition can overwrite newer Grafana edits.
 
-Key variables: `location`, `alert_email`, `grafana_admin_object_id`, `grafana_sku_size`.
+Key variables: `location`, `alert_email`, `grafana_admin_object_id`, `grafana_sku_size` (`X1` or `X2`).
