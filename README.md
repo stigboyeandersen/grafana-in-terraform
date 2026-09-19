@@ -1,12 +1,12 @@
 # grafana-in-terraform
 
 Terraform that provisions an Azure Managed Grafana instance, a self-monitoring
-dashboard, and Grafana-native alert rules on critical conditions.
+dashboard, and one Grafana-native alert rule.
 
-Terraform does not prevent editing dashboards or alerts in Grafana. Make and
-test changes in Grafana when convenient, then move the final configuration back
-into Terraform so it is preserved for disaster recovery. AI can help compare
-the live Grafana configuration with the Terraform files and apply the changes.
+Terraform does not prevent editing dashboards in Grafana. Make and test changes
+in Grafana when convenient, then move the final configuration back into
+Terraform so it is preserved for disaster recovery. AI can help compare the
+live Grafana configuration with the Terraform files and apply the changes.
 
 ## What gets created
 
@@ -23,15 +23,12 @@ the live Grafana configuration with the Terraform files and apply the changes.
 - **Self-monitoring dashboard** (via the `grafana` Terraform provider): a
   single panel plotting the Grafana instance's memory usage, HTTP request
   count, and network bytes received, sourced from Azure Monitor.
-- **Grafana Alerting** (native Grafana-managed alert rules, provisioned via
-  the `grafana` Terraform provider), all routed to an email contact point:
+- **Grafana Alerting** (native Grafana-managed alerting, provisioned via the
+  `grafana` Terraform provider), routed to an email contact point:
   - High memory usage (> 85% for 15 min) — `severity: critical`.
-  - No HTTP traffic reaching the instance for 30 min — `severity: critical`.
 
-  Both rules query the built-in Azure Monitor data source directly (no Azure
-  Monitor alert resources are used) and live in the "Grafana Self-Monitoring
-  Alerts" folder.
-
+  The rule queries the built-in Azure Monitor data source directly and lives in
+  the "Grafana Self-Monitoring Alerts" folder.
 ## Usage
 
 ```sh
@@ -51,6 +48,5 @@ Notable variables (see `variables.tf`): `location`, `alert_email`,
 > Note: dashboard/alert authentication uses a short-lived Entra ID bearer
 > token fetched via `az account get-access-token` at apply time, gated by a
 > 90s `time_sleep` after the RBAC role assignments are created to allow for
-> permission propagation. If the dashboard/alerting steps ever fail on a
-> fresh workspace because RBAC hasn't propagated yet, simply re-run
-> `terraform apply`.
+> permission propagation. If the dashboard/alerting steps ever fail on a fresh
+> workspace because RBAC hasn't propagated yet, simply re-run `terraform apply`.

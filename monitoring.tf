@@ -33,12 +33,9 @@ resource "grafana_folder" "self_monitoring_alerts" {
 }
 
 # --- Grafana-managed alert rules on the Grafana workspace itself ------------
-# Supported platform metrics for Microsoft.Dashboard/grafana:
-# HttpRequestCount, MemoryUsagePercentage, NetworkBytesReceived, NetworkBytesTransmitted
-#
-# Each rule queries the Azure Monitor data source (query A), reduces the
-# series to its most recent value (query B), then compares it against a
-# threshold (query C), which is the alert condition.
+# The rule queries the Azure Monitor data source (query A), reduces the series
+# to its most recent value (query B), then compares it against a threshold
+# (query C), which is the alert condition.
 
 resource "grafana_rule_group" "self_monitoring" {
   name               = "Grafana Self-Monitoring"
@@ -120,91 +117,6 @@ resource "grafana_rule_group" "self_monitoring" {
             evaluator = {
               type   = "gt"
               params = [85]
-            }
-          }
-        ]
-        datasource = {
-          type = "__expr__"
-          uid  = "-100"
-        }
-      })
-    }
-  }
-
-  rule {
-    name           = "Grafana no HTTP traffic"
-    for            = "30m"
-    condition      = "C"
-    no_data_state  = "Alerting"
-    exec_err_state = "Alerting"
-
-    annotations = {
-      summary = "No HTTP requests have reached the Grafana instance in 30 minutes, which can indicate an outage or connectivity issue."
-    }
-    labels = {
-      severity = "critical"
-    }
-
-    data {
-      ref_id         = "A"
-      query_type     = "Azure Monitor"
-      datasource_uid = data.grafana_data_source.azure_monitor.uid
-      relative_time_range {
-        from = 1800
-        to   = 0
-      }
-      model = jsonencode({
-        refId        = "A"
-        queryType    = "Azure Monitor"
-        subscription = data.azurerm_subscription.current.subscription_id
-        azureMonitor = {
-          resourceGroup   = azurerm_resource_group.this.name
-          resourceName    = azurerm_dashboard_grafana.this.name
-          metricNamespace = "Microsoft.Dashboard/grafana"
-          metricName      = "HttpRequestCount"
-          aggregation     = "Total"
-          timeGrain       = "auto"
-        }
-      })
-    }
-
-    data {
-      ref_id         = "B"
-      query_type     = ""
-      datasource_uid = "-100"
-      relative_time_range {
-        from = 1800
-        to   = 0
-      }
-      model = jsonencode({
-        refId      = "B"
-        type       = "reduce"
-        expression = "A"
-        reducer    = "sum"
-        datasource = {
-          type = "__expr__"
-          uid  = "-100"
-        }
-      })
-    }
-
-    data {
-      ref_id         = "C"
-      query_type     = ""
-      datasource_uid = "-100"
-      relative_time_range {
-        from = 1800
-        to   = 0
-      }
-      model = jsonencode({
-        refId      = "C"
-        type       = "threshold"
-        expression = "B"
-        conditions = [
-          {
-            evaluator = {
-              type   = "lte"
-              params = [0]
             }
           }
         ]
