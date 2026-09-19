@@ -32,10 +32,35 @@ data "grafana_data_source" "azure_monitor" {
 # network throughput of the Grafana instance itself.
 resource "grafana_dashboard" "self_monitoring" {
   config_json = jsonencode({
-    title         = "Grafana Self-Monitoring"
-    tags          = ["self-monitoring", "terraform"]
-    timezone      = "browser"
-    schemaVersion = 39
+    annotations = {
+      list = [
+        {
+          builtIn = 1
+          datasource = {
+            type = "grafana"
+            uid  = "-- Grafana --"
+          }
+          enable    = true
+          hide      = true
+          iconColor = "rgba(0, 211, 255, 1)"
+          name      = "Annotations & Alerts"
+          type      = "dashboard"
+        }
+      ]
+    }
+    editable             = true
+    fiscalYearStartMonth = 0
+    graphTooltip         = 0
+    links                = []
+    preload              = false
+    refresh              = ""
+    schemaVersion        = 42
+    tags                 = ["self-monitoring", "terraform"]
+    templating           = { list = [] }
+    timepicker           = {}
+    timezone             = "browser"
+    title                = "Grafana Self-Monitoring"
+    weekStart            = ""
     time = {
       from = "now-6h"
       to   = "now"
@@ -51,8 +76,74 @@ resource "grafana_dashboard" "self_monitoring" {
           uid  = data.grafana_data_source.azure_monitor.uid
         }
         fieldConfig = {
-          defaults  = { unit = "short" }
+          defaults = {
+            color = {
+              mode = "palette-classic"
+            }
+            custom = {
+              axisBorderShow   = false
+              axisCenteredZero = false
+              axisColorMode    = "text"
+              axisLabel        = ""
+              axisPlacement    = "auto"
+              barAlignment     = 0
+              barWidthFactor   = 0.6
+              drawStyle        = "line"
+              fillOpacity      = 0
+              gradientMode     = "none"
+              hideFrom = {
+                legend  = false
+                tooltip = false
+                viz     = false
+              }
+              insertNulls       = false
+              lineInterpolation = "linear"
+              lineWidth         = 1
+              pointSize         = 5
+              scaleDistribution = {
+                type = "linear"
+              }
+              showPoints = "auto"
+              showValues = false
+              spanNulls  = false
+              stacking = {
+                group = "A"
+                mode  = "none"
+              }
+              thresholdsStyle = {
+                mode = "off"
+              }
+            }
+            mappings = []
+            thresholds = {
+              mode = "absolute"
+              steps = [
+                {
+                  color = "green"
+                  value = 0
+                },
+                {
+                  color = "red"
+                  value = 80
+                }
+              ]
+            }
+            unit = "short"
+          }
           overrides = []
+        }
+        options = {
+          legend = {
+            calcs       = []
+            displayMode = "table"
+            placement   = "right"
+            showLegend  = true
+          }
+          tooltip = {
+            hideZeros = false
+            mode      = "single"
+            sort      = "none"
+          }
         }
         targets = [
           {
@@ -60,13 +151,17 @@ resource "grafana_dashboard" "self_monitoring" {
             queryType    = "Azure Monitor"
             subscription = data.azurerm_subscription.current.subscription_id
             azureMonitor = {
-              resourceGroup   = azurerm_resource_group.this.name
-              resourceName    = azurerm_dashboard_grafana.this.name
               metricNamespace = "Microsoft.Dashboard/grafana"
               metricName      = "MemoryUsagePercentage"
               aggregation     = "Average"
               timeGrain       = "auto"
               alias           = "Memory usage (%)"
+              resources = [
+                {
+                  resourceGroup = azurerm_resource_group.this.name
+                  resourceName  = azurerm_dashboard_grafana.this.name
+                }
+              ]
             }
           },
           {
@@ -74,13 +169,17 @@ resource "grafana_dashboard" "self_monitoring" {
             queryType    = "Azure Monitor"
             subscription = data.azurerm_subscription.current.subscription_id
             azureMonitor = {
-              resourceGroup   = azurerm_resource_group.this.name
-              resourceName    = azurerm_dashboard_grafana.this.name
               metricNamespace = "Microsoft.Dashboard/grafana"
               metricName      = "HttpRequestCount"
               aggregation     = "Total"
               timeGrain       = "auto"
               alias           = "HTTP requests"
+              resources = [
+                {
+                  resourceGroup = azurerm_resource_group.this.name
+                  resourceName  = azurerm_dashboard_grafana.this.name
+                }
+              ]
             }
           },
           {
@@ -88,13 +187,17 @@ resource "grafana_dashboard" "self_monitoring" {
             queryType    = "Azure Monitor"
             subscription = data.azurerm_subscription.current.subscription_id
             azureMonitor = {
-              resourceGroup   = azurerm_resource_group.this.name
-              resourceName    = azurerm_dashboard_grafana.this.name
               metricNamespace = "Microsoft.Dashboard/grafana"
               metricName      = "NetworkBytesReceived"
               aggregation     = "Total"
               timeGrain       = "auto"
               alias           = "Network bytes received"
+              resources = [
+                {
+                  resourceGroup = azurerm_resource_group.this.name
+                  resourceName  = azurerm_dashboard_grafana.this.name
+                }
+              ]
             }
           }
         ]

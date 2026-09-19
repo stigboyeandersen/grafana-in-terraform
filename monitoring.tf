@@ -1,7 +1,8 @@
 # --- Grafana Alerting: notification target ----------------------------------
 
 resource "grafana_contact_point" "critical" {
-  name = "Critical Grafana Alerts"
+  name               = "Critical Grafana Alerts"
+  disable_provenance = true
 
   email {
     addresses               = [var.alert_email]
@@ -16,8 +17,9 @@ resource "grafana_contact_point" "critical" {
 
 # Route every alert (default, unmatched policy) to the email contact point.
 resource "grafana_notification_policy" "default" {
-  contact_point = grafana_contact_point.critical.name
-  group_by      = ["alertname"]
+  disable_provenance = true
+  contact_point      = grafana_contact_point.critical.name
+  group_by           = ["alertname"]
 
   group_wait      = "30s"
   group_interval  = "5m"
@@ -39,9 +41,10 @@ resource "grafana_folder" "self_monitoring_alerts" {
 # threshold (query C), which is the alert condition.
 
 resource "grafana_rule_group" "self_monitoring" {
-  name             = "Grafana Self-Monitoring"
-  folder_uid       = grafana_folder.self_monitoring_alerts.uid
-  interval_seconds = 300
+  name               = "Grafana Self-Monitoring"
+  disable_provenance = true
+  folder_uid         = grafana_folder.self_monitoring_alerts.uid
+  interval_seconds   = 300
 
   rule {
     name           = "Grafana high memory usage"

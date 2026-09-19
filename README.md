@@ -3,6 +3,11 @@
 Terraform that provisions an Azure Managed Grafana instance, a self-monitoring
 dashboard, and Grafana-native alert rules on critical conditions.
 
+Terraform does not prevent editing dashboards or alerts in Grafana. Make and
+test changes in Grafana when convenient, then move the final configuration back
+into Terraform so it is preserved for disaster recovery. AI can help compare
+the live Grafana configuration with the Terraform files and apply the changes.
+
 ## What gets created
 
 - **Resource group** (`rg-grafana-selfmonitor`) containing everything below.
@@ -35,6 +40,10 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+After editing Grafana, run `terraform plan` before applying Terraform changes.
+This helps detect drift and prevents an older Terraform definition from
+overwriting newer Grafana changes.
 
 Notable variables (see `variables.tf`): `location`, `alert_email`,
 `grafana_admin_object_id`, `grafana_sku_size`.
