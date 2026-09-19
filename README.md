@@ -23,12 +23,40 @@ live Grafana configuration with the Terraform files and apply the changes.
 - **Self-monitoring dashboard** (via the `grafana` Terraform provider): a
   single panel plotting the Grafana instance's memory usage, HTTP request
   count, and network bytes received, sourced from Azure Monitor.
+- **Azure resource topology dashboard** (via the `grafana` Terraform provider):
+  an Azure Resource Graph-backed Node graph showing resource groups and their
+  resources, plus a resource inventory table.
 - **Grafana Alerting** (native Grafana-managed alerting, provisioned via the
   `grafana` Terraform provider), routed to an email contact point:
   - High memory usage (> 85% for 15 min) — `severity: critical`.
 
   The rule queries the built-in Azure Monitor data source directly and lives in
   the "Grafana Self-Monitoring Alerts" folder.
+
+## Access rights
+
+The following access is required:
+
+- **Grafana managed identity**
+  - `Monitoring Reader` on the monitored resource group for Azure Monitor
+    metrics and logs.
+  - `Reader` on each subscription included in the topology dashboard so Azure
+    Resource Graph can enumerate resources. The example grants this on the
+    current subscription. For least privilege, use `Reader` assignments on
+    only the resource groups that should appear in the graph.
+- **Terraform/deployment identity**
+  - `Contributor` (or narrower resource-specific write roles) to create and
+    update the resource group, Managed Grafana workspace, and dashboards.
+  - `User Access Administrator` or `Role Based Access Control Administrator`
+    at the assignment scope to create the role assignments above.
+- **Grafana operator**
+  - `Grafana Admin` on the Managed Grafana workspace to manage data sources,
+    dashboards, and alerting.
+
+Topology queries are read-only. `Network Contributor`, `Contributor`, and
+write permissions on the Azure resources are not required to display the
+topology. Azure Resource Graph data can be eventually consistent, and the
+Node graph limits the number of visible nodes for performance.
 ## Usage
 
 ```sh

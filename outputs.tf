@@ -18,6 +18,11 @@ output "grafana_dashboard_url" {
   value       = "${azurerm_dashboard_grafana.this.endpoint}/d/${grafana_dashboard.self_monitoring.uid}"
 }
 
+output "azure_topology_dashboard_url" {
+  description = "Direct URL to the Azure resource topology dashboard."
+  value       = "${azurerm_dashboard_grafana.this.endpoint}/d/${grafana_dashboard.azure_topology.uid}"
+}
+
 output "grafana_alert_folder_url" {
   description = "URL of the folder containing the Grafana-managed self-monitoring alert rules."
   value       = "${azurerm_dashboard_grafana.this.endpoint}/dashboards/f/${grafana_folder.self_monitoring_alerts.uid}"

@@ -51,6 +51,14 @@ resource "azurerm_role_assignment" "grafana_monitoring_reader" {
   principal_id         = azurerm_dashboard_grafana.this.identity[0].principal_id
 }
 
+# Azure Resource Graph requires read access to the subscriptions whose
+# resources are included in the topology dashboard.
+resource "azurerm_role_assignment" "grafana_resource_reader" {
+  scope                = data.azurerm_subscription.current.id
+  role_definition_name = "Reader"
+  principal_id         = azurerm_dashboard_grafana.this.identity[0].principal_id
+}
+
 # RBAC role assignments can take a short while to propagate through Entra ID.
 # Give them time to become effective before Terraform tries to authenticate
 # against the Grafana HTTP API using the newly granted permissions.
@@ -58,6 +66,7 @@ resource "time_sleep" "rbac_propagation" {
   depends_on = [
     azurerm_role_assignment.grafana_admin_self,
     azurerm_role_assignment.grafana_monitoring_reader,
+    azurerm_role_assignment.grafana_resource_reader,
   ]
 
   create_duration = "90s"
